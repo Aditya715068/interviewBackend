@@ -8,8 +8,7 @@ router.post('/logout', logout);
 
 module.exports = router;
 
-function login (req, res, next) {
-    console.log(req)
+function login (req, res, next) {c
     sessionService.login(req.body, req.connection.remoteAddress)
         .then(data => data ? res.json(data) : res.status(404).json({message: 'No login with such token'}))
         .catch(err => next(err));

@@ -11,9 +11,10 @@ module.exports = {
 
 async function login(body, userIP) {
     const token = body.token;
+    console.log("hello aditya ----------------------------------")
     const session = await Session.findOne({token: token});
-    if (!session) {
-        const user = await User.findOne({ username: body.firstName });
+    if (!token) {
+        // const user = await User.findOne({ username: body.firstName });
         let json = {
             'username': body.username,
             'loginTime': new Date(),
@@ -24,20 +25,37 @@ async function login(body, userIP) {
         await session.save();
         return 'Session logged in'
     } else {
-        return session
+        return token
     }
 }
 
 async function logout(body, userIP) {
     const token = body.token;
+    console.log("hello",body.data.username )
     const session = await Session.findOne({token: token});
     if (!session) {
+        console.log('No such session')
         return 'No such session'
     } else {
+   const regex = /"username":"(.*?)"/;
+   const match = body.data&& body.data.length?body.data.match(regex):null;
+   
+   if (match) {
+     const roleValue = match[1]; // Extract the value of the "role" property
+     console.log(roleValue); // This will log "Auditor"
+   var data = roleValue
+   } else {
+     console.log('Role property not found.');
+   }
         let sessionJSON = {
+            'username': data,
+            'userIP': userIP,
+            'token':"token",
             'logoutTime': new Date()
         }
-        Object.assign(session, sessionJSON);
+        // console.log(new Date())
+      // Object.assign(session, sessionJSON)
+     const session = new Session(sessionJSON);
         await session.save();
         return 'Session logged out'
     }

@@ -16,22 +16,35 @@ module.exports = {
 };
 
 async function audit(body) {
-    let token = body.token;
-    const authenticated = await Session.findOne({token: token});
-    const getRole = await UserRole.findOne({username: authenticated.username});
-    if (authenticated && authenticated.logoutTime === undefined ) {
+    // let token = body.token;
+    // const authenticated = await Session.findOne({token: token});
+    // const getRole = await UserRole.findOne({username: authenticated.username});
+    // if (authenticated && authenticated.logoutTime === undefined ) {
         const userList = await Session.find();
         return userList;
-    } else {
-        return 'Not authenticated to get the list';
-    }
+    // } else {
+    //     return 'Not authenticated to get the list';
+    // }
 }
 
-async function authenticate({ username, password }) {
+async function authenticate({ username, password }, req) {
     const user = await User.findOne({ username });
     if (user && bcrypt.compareSync(password, user.hash)) {
+       
         const { hash, ...userWithoutHash } = user.toObject();
         const token = jwt.sign({ sub: user.id }, config.secret);
+    // const session = await Session.findOne({});
+     let json = {
+        'username': username,
+        'loginTime': new Date(),
+        'token': token,
+        'userIP': req.connection.remoteAddress
+       
+    }
+    const session = new Session(json);
+    await session.save();
+        
+        
         return {
             ...userWithoutHash,
             token
